@@ -69,10 +69,8 @@
 
 /**
  * @typedef {Object} MovePokemon
- * @property {Object} pokemon - Pokemon que puede aprender el movimiento
- * @property {string} pokemon.name - Nombre del Pokemon
- * @property {string} pokemon.url - URL de la API para este Pokemon
- * @property {Array} version_group_details - Detalles por versión
+ * @property {string} name - Nombre del Pokemon que puede aprender el movimiento
+ * @property {string} url - URL de la API para este Pokemon
  */
 
 /**

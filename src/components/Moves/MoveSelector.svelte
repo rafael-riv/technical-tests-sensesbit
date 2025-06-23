@@ -5,12 +5,15 @@
     selectedMove, 
     isLoading, 
     error,
-    searchResults,
+    displayMoves,
+    isSearching,
     hasActiveSearch,
+    currentSearchTerm,
+    searchError,
     initializeMovesStore,
     selectMove,
-    searchMovesAction,
-    clearSearch,
+    searchMovesForDropdown,
+    clearDropdownSearch,
     clearError
   } from '../../stores/movesStore.js';
   import { Button } from '../../shadcn/button/index.js';
@@ -31,13 +34,13 @@
   } = $props();
 
   // Estado local usando Svelte 5
-  let searchTerm = $state('');
   let showDropdown = $state(false);
-  let searchInput = $state(null);
-  let dropdownContainer = $state(null);
+  let searchInput = null;
+  let dropdownContainer = null;
+  let searchTimeout = null;
 
-  // Reactive statements usando Svelte 5
-  let displayMoves = $derived($hasActiveSearch ? $searchResults : $availableMoves);
+  // Estados reactivos SOLO para la lista desplegable
+  let showClearButton = $state(false);
   let selectedMoveData = $derived($selectedMove);
 
   // Lifecycle
@@ -59,31 +62,55 @@
     document.addEventListener('click', handleOutsideClick);
     return () => {
       document.removeEventListener('click', handleOutsideClick);
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
     };
   });
 
   // Handlers
-  async function handleSearch(event) {
-    console.log('🔍 handleSearch ejecutado!', event);
-    searchTerm = event.target.value;
-    console.log('🔍 searchTerm:', searchTerm);
-    console.log('🔍 searchTerm.length:', searchTerm.length);
+  function handleInputChange(event) {
+    const newValue = event.target.value;
+    showClearButton = newValue.length > 0;
     
-    if (searchTerm.length >= 2) {
-      console.log('🔍 Buscando movimientos...');
-      await searchMovesAction(searchTerm);
-      showDropdown = true;
+    console.log('🔍 Input cambiado a:', newValue);
+    
+    // Limpiar timeout anterior
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    if (newValue.length >= 2) {
+      // Debounce la búsqueda para evitar re-renders durante escritura
+      searchTimeout = setTimeout(async () => {
+        console.log('🔍 Ejecutando búsqueda para:', newValue);
+        await searchMovesForDropdown(newValue);
+        showDropdown = true;
+      }, 150);
+    } else if (newValue.length === 0) {
+      clearDropdownSearch();
+      showDropdown = $availableMoves.length > 0;
     } else {
-      console.log('🔍 Limpiando búsqueda...');
-      clearSearch();
-      showDropdown = searchTerm.length === 0 && $availableMoves.length > 0;
+      clearDropdownSearch();
+      showDropdown = false;
     }
   }
 
   async function handleMoveSelect(move) {
+    // Limpiar cualquier búsqueda pendiente
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
     await selectMove(move);
     selectedMoveValue = move.name;
-    searchTerm = move.name;
+    
+    // Actualizar el input directamente via DOM
+    if (searchInput) {
+      searchInput.value = move.name;
+    }
+    showClearButton = true;
+    
     showDropdown = false;
     
     // Llama callback si existe
@@ -96,9 +123,7 @@
   }
 
   function handleInputFocus() {
-    if ($availableMoves.length > 0 || $searchResults.length > 0) {
-      showDropdown = true;
-    }
+    showDropdown = true;
   }
 
   function handleOutsideClick(event) {
@@ -108,9 +133,19 @@
   }
 
   function clearSelection() {
-    searchTerm = '';
+    // Limpiar cualquier búsqueda pendiente
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Limpiar el input directamente via DOM
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    showClearButton = false;
+    
     selectedMoveValue = null;
-    clearSearch();
+    clearDropdownSearch();
     showDropdown = false;
     
     if (onMoveCleared) {
@@ -134,9 +169,8 @@
   <div class="relative">
     <Input
       type="text"
-      bind:ref={searchInput}
-      bind:value={searchTerm}
-      oninput={handleSearch}
+      bind:this={searchInput}
+      oninput={handleInputChange}
       onfocus={handleInputFocus}
       placeholder={placeholder}
       class="w-full pr-10 text-black"
@@ -144,7 +178,7 @@
     />
     
     <!-- Botón de limpiar -->
-    {#if searchTerm}
+    {#if showClearButton}
       <Button
         variant="ghost"
         size="sm"
@@ -162,18 +196,18 @@
   {#if showDropdown}
     <Card class="absolute z-50 w-full mt-1 max-h-80 overflow-y-auto border shadow-lg">
       <CardContent class="p-0">
-        {#if $isLoading}
+        {#if $isSearching}
           <!-- Estado de carga -->
           <div class="p-4 space-y-2">
             <Skeleton class="h-4 w-3/4" />
             <Skeleton class="h-4 w-1/2" />
             <Skeleton class="h-4 w-2/3" />
           </div>
-        {:else if displayMoves.length === 0}
+        {:else if $displayMoves.length === 0}
           <!-- Sin resultados -->
           <div class="p-4 text-center text-gray-500">
             {#if $hasActiveSearch}
-              No se encontraron movimientos para "{searchTerm}"
+              No se encontraron movimientos para "{$currentSearchTerm}"
             {:else}
               No hay movimientos disponibles
             {/if}
@@ -181,7 +215,7 @@
         {:else}
           <!-- Lista de movimientos -->
           <div class="divide-y">
-            {#each displayMoves.slice(0, 10) as move (move.id)}
+            {#each $displayMoves.slice(0, 10) as move (move.id)}
               <button
                 class="w-full p-3 text-left hover:bg-gray-50 transition-colors focus:bg-gray-50 focus:outline-none"
                 onclick={() => handleMoveSelect(move)}
@@ -223,9 +257,9 @@
               </button>
             {/each}
             
-            {#if displayMoves.length > 10}
+            {#if $displayMoves.length > 10}
               <div class="p-2 text-center text-sm text-gray-500 bg-gray-50">
-                Y {displayMoves.length - 10} movimientos más...
+                Y {$displayMoves.length - 10} movimientos más...
               </div>
             {/if}
           </div>
@@ -235,10 +269,10 @@
   {/if}
 
   <!-- Mensaje de error -->
-  {#if $error}
+  {#if $error || $searchError}
     <Alert variant="destructive" class="mt-2">
       <AlertDescription class="flex items-center justify-between">
-        {$error}
+        {$error || $searchError}
         <Button variant="ghost" size="sm" class="" onclick={clearError}>
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

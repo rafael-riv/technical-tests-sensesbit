@@ -105,12 +105,30 @@ export async function getPokemonByMove(moveIdOrName) {
     const moveDetails = await getMoveDetails(moveIdOrName);
     
     if (!moveDetails.learned_by_pokemon || moveDetails.learned_by_pokemon.length === 0) {
+      console.log(`[getPokemonByMove] No hay Pokemon que aprendan el movimiento: ${moveIdOrName}`);
       return [];
     }
 
-    return moveDetails.learned_by_pokemon.map(entry => ({
-      name: entry.pokemon.name,
-      url: entry.pokemon.url
+    // Filtrar entradas válidas - la estructura correcta es {name, url} directamente
+    const validEntries = moveDetails.learned_by_pokemon.filter((entry, index) => {
+      // Validación robusta de la estructura de datos correcta
+      if (!entry || !entry.name || !entry.url) {
+        console.warn(`[getPokemonByMove] Entrada inválida en índice ${index} para ${moveIdOrName}:`, entry);
+        return false;
+      }
+      return true;
+    });
+
+    if (validEntries.length !== moveDetails.learned_by_pokemon.length) {
+      console.warn(`[getPokemonByMove] ${moveDetails.learned_by_pokemon.length - validEntries.length} entradas inválidas filtradas para ${moveIdOrName}`);
+    }
+
+    console.log(`[getPokemonByMove] ${validEntries.length} Pokemon válidos encontrados para: ${moveIdOrName}`);
+
+    // Mapear directamente ya que la estructura es {name, url}
+    return validEntries.map(entry => ({
+      name: entry.name,
+      url: entry.url
     }));
   } catch (error) {
     console.error(`Error al obtener Pokemon del movimiento ${moveIdOrName}:`, error);

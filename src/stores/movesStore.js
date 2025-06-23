@@ -1,6 +1,6 @@
 /**
  * Store para manejar el estado de los movimientos Pokemon
- * Incluye lista de moves, move seleccionado, loading y errores
+ * SEPARACIÓN COMPLETA: Input State vs Dropdown List State
  */
 
 import { writable, derived, get } from 'svelte/store';
@@ -11,7 +11,7 @@ import { getAllMoves, getMoveDetails, getSimpleMovesList, searchMoves } from '..
  * @typedef {import('../types/moves.js').Move} Move
  */
 
-// === ESTADO BASE ===
+// === ESTADO BASE PRINCIPAL ===
 export const movesState = writable({
   // Lista completa de moves disponibles
   allMoves: [],
@@ -25,23 +25,36 @@ export const movesState = writable({
   // Detalles del move seleccionado
   selectedMoveDetails: null,
   
-  // Estados de carga
+  // Estados de carga principales
   isLoading: false,
   isLoadingDetails: false,
-  isSearching: false,
   
   // Manejo de errores
   error: null,
-  
-  // Resultados de búsqueda
-  searchResults: [],
-  searchTerm: '',
   
   // Configuración
   initialized: false
 });
 
-// === STORES DERIVADOS ===
+// === ESTADO SEPARADO PARA DROPDOWN (Solo reactividad de lista) ===
+export const dropdownState = writable({
+  // Resultados actuales para mostrar en dropdown
+  displayMoves: [],
+  
+  // Estado de búsqueda activa
+  isSearching: false,
+  
+  // Término de búsqueda actual (solo para UI de dropdown)
+  currentSearchTerm: '',
+  
+  // Si hay una búsqueda activa
+  hasActiveSearch: false,
+  
+  // Errores específicos de búsqueda
+  searchError: null
+});
+
+// === STORES DERIVADOS PRINCIPALES ===
 
 /**
  * Lista de moves disponibles para mostrar en selectores
@@ -72,34 +85,63 @@ export const selectedMoveDetails = derived(
  */
 export const isLoading = derived(
   movesState,
-  $state => $state.isLoading || $state.isLoadingDetails || $state.isSearching
+  $state => $state.isLoading || $state.isLoadingDetails
 );
 
 /**
- * Errores del store
+ * Errores del store principal
  */
 export const error = derived(
   movesState,
   $state => $state.error
 );
 
+// === STORES DERIVADOS PARA DROPDOWN (Solo para lista desplegable) ===
+
 /**
- * Resultados de búsqueda
+ * Moves a mostrar en el dropdown (reactivo)
  */
-export const searchResults = derived(
-  movesState,
-  $state => $state.searchResults
+export const displayMoves = derived(
+  dropdownState,
+  $dropdown => $dropdown.displayMoves
 );
 
 /**
- * Si hay una búsqueda activa
+ * Estado de búsqueda (reactivo para loading en dropdown)
+ */
+export const isSearching = derived(
+  dropdownState,
+  $dropdown => $dropdown.isSearching
+);
+
+/**
+ * Si hay una búsqueda activa (reactivo para UI)
  */
 export const hasActiveSearch = derived(
-  movesState,
-  $state => $state.searchTerm.trim().length > 0
+  dropdownState,
+  $dropdown => $dropdown.hasActiveSearch
 );
 
-// === ACCIONES ===
+/**
+ * Término actual de búsqueda (reactivo para mostrar en UI)
+ */
+export const currentSearchTerm = derived(
+  dropdownState,
+  $dropdown => $dropdown.currentSearchTerm
+);
+
+/**
+ * Errores de búsqueda (reactivo para mostrar en UI)
+ */
+export const searchError = derived(
+  dropdownState,
+  $dropdown => $dropdown.searchError
+);
+
+// === COMPATIBILIDAD (deprecated) ===
+export const searchResults = displayMoves; // Alias para compatibilidad
+
+// === ACCIONES PRINCIPALES ===
 
 /**
  * Inicializa el store cargando la lista de moves
@@ -126,6 +168,14 @@ export async function initializeMovesStore() {
       isLoading: false,
       initialized: true,
       error: null
+    }));
+
+    // Inicializar dropdown con la lista completa
+    dropdownState.update(dropdown => ({
+      ...dropdown,
+      displayMoves: simpleMoves,
+      hasActiveSearch: false,
+      currentSearchTerm: ''
     }));
 
     console.log(`[MovesStore] Inicializado con ${simpleMoves.length} movimientos`);
@@ -192,24 +242,32 @@ export function clearSelection() {
   console.log('[MovesStore] Selección limpiada');
 }
 
+// === ACCIONES PARA DROPDOWN (Solo actualizan la lista desplegable) ===
+
 /**
- * Busca movimientos por término
- * @param {string} searchTerm - Término de búsqueda
+ * Busca movimientos y actualiza SOLO el dropdown
+ * @param {string} searchTerm - Término de búsqueda (viene del input)
  */
-export async function searchMovesAction(searchTerm) {
-  movesState.update(state => ({
-    ...state,
-    searchTerm,
+export async function searchMovesForDropdown(searchTerm) {
+  console.log(`[DropdownState] Búsqueda para: "${searchTerm}"`);
+  
+  dropdownState.update(dropdown => ({
+    ...dropdown,
     isSearching: true,
-    error: null
+    searchError: null,
+    currentSearchTerm: searchTerm
   }));
 
   if (!searchTerm.trim()) {
-    movesState.update(state => ({
-      ...state,
-      searchResults: [],
+    // Mostrar lista completa si no hay término
+    const mainState = get(movesState);
+    dropdownState.update(dropdown => ({
+      ...dropdown,
+      displayMoves: mainState.simpleMoves,
       isSearching: false,
-      searchTerm: ''
+      hasActiveSearch: false,
+      currentSearchTerm: '',
+      searchError: null
     }));
     return;
   }
@@ -217,35 +275,55 @@ export async function searchMovesAction(searchTerm) {
   try {
     const results = await searchMoves(searchTerm, 20);
     
-    movesState.update(state => ({
-      ...state,
-      searchResults: results,
+    dropdownState.update(dropdown => ({
+      ...dropdown,
+      displayMoves: results,
       isSearching: false,
-      error: null
+      hasActiveSearch: true,
+      searchError: null
     }));
 
-    console.log(`[MovesStore] Búsqueda "${searchTerm}": ${results.length} resultados`);
+    console.log(`[DropdownState] Búsqueda "${searchTerm}": ${results.length} resultados`);
   } catch (err) {
-    movesState.update(state => ({
-      ...state,
-      searchResults: [],
+    dropdownState.update(dropdown => ({
+      ...dropdown,
+      displayMoves: [],
       isSearching: false,
-      error: err.message
+      searchError: err.message
     }));
-    console.error('[MovesStore] Error en búsqueda:', err);
+    console.error('[DropdownState] Error en búsqueda:', err);
   }
 }
 
 /**
- * Limpia los resultados de búsqueda
+ * Limpia la búsqueda del dropdown (vuelve a lista completa)
+ */
+export function clearDropdownSearch() {
+  const mainState = get(movesState);
+  dropdownState.update(dropdown => ({
+    ...dropdown,
+    displayMoves: mainState.simpleMoves,
+    hasActiveSearch: false,
+    currentSearchTerm: '',
+    searchError: null
+  }));
+  console.log('[DropdownState] Búsqueda limpiada');
+}
+
+// === ACCIONES DE COMPATIBILIDAD (deprecated pero funcionales) ===
+
+/**
+ * @deprecated Usar searchMovesForDropdown en su lugar
+ */
+export async function searchMovesAction(searchTerm) {
+  return await searchMovesForDropdown(searchTerm);
+}
+
+/**
+ * @deprecated Usar clearDropdownSearch en su lugar
  */
 export function clearSearch() {
-  movesState.update(state => ({
-    ...state,
-    searchResults: [],
-    searchTerm: '',
-    error: null
-  }));
+  return clearDropdownSearch();
 }
 
 /**
@@ -253,13 +331,14 @@ export function clearSearch() {
  */
 export async function retryLastOperation() {
   const state = get(movesState);
+  const dropdown = get(dropdownState);
   
   if (!state.initialized) {
     await initializeMovesStore();
   } else if (state.selectedMove && !state.selectedMoveDetails) {
     await selectMove(state.selectedMove);
-  } else if (state.searchTerm) {
-    await searchMovesAction(state.searchTerm);
+  } else if (dropdown.currentSearchTerm) {
+    await searchMovesForDropdown(dropdown.currentSearchTerm);
   }
 }
 
@@ -270,6 +349,10 @@ export function clearError() {
   movesState.update(state => ({
     ...state,
     error: null
+  }));
+  dropdownState.update(dropdown => ({
+    ...dropdown,
+    searchError: null
   }));
 }
 
@@ -284,13 +367,19 @@ export function resetMovesStore() {
     selectedMoveDetails: null,
     isLoading: false,
     isLoadingDetails: false,
-    isSearching: false,
     error: null,
-    searchResults: [],
-    searchTerm: '',
     initialized: false
   });
-  console.log('[MovesStore] Store reseteado');
+  
+  dropdownState.set({
+    displayMoves: [],
+    isSearching: false,
+    currentSearchTerm: '',
+    hasActiveSearch: false,
+    searchError: null
+  });
+  
+  console.log('[MovesStore] Store reseteado completamente');
 }
 
 // === UTILIDADES ===
