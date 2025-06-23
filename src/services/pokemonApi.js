@@ -117,7 +117,9 @@ export async function getPokemonListDetails(pokemonList) {
         name: pokemon.name,
         url: `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.POKEMON}/${pokemon.id}`,
         image: getPokemonImageUrl(pokemon),
-        types: pokemon.types?.map(type => type.type.name) || []
+        types: pokemon.types?.map(type => type.type.name) || [],
+        height: pokemon.height, // En decímetros
+        weight: pokemon.weight  // En hectogramos
       }));
 
     return simplePokemon.sort((a, b) => a.id - b.id);
