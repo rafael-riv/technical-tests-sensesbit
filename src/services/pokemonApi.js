@@ -193,6 +193,74 @@ export async function searchPokemon(searchTerm, limit = 20) {
 }
 
 /**
+ * Obtiene solo los stats y evoluciones de un Pokemon usando su URL
+ * @param {string} pokemonUrl - URL completa del Pokemon (ej: https://pokeapi.co/api/v2/pokemon/25)
+ * @returns {Promise<Object>} Objeto con stats y evoluciones del Pokemon
+ */
+export async function getPokemonStatsAndEvolutions(pokemonUrl) {
+  if (!pokemonUrl) {
+    throw new Error('URL del Pokemon es requerida');
+  }
+
+  try {
+    // Obtiene los datos del Pokemon desde la URL
+    const response = await fetch(pokemonUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const pokemonData = await response.json();
+    
+    // Obtiene las evoluciones usando la función existente
+    let evolutions = [];
+    try {
+      evolutions = await getPokemonEvolutions(pokemonData.name);
+    } catch (evolutionError) {
+      console.warn(`No se pudieron obtener evoluciones para ${pokemonData.name}:`, evolutionError);
+      evolutions = [];
+    }
+    
+    // Retorna solo stats y evoluciones
+    const result = {
+      // Información básica mínima
+      basic: {
+        id: pokemonData.id,
+        name: pokemonData.name
+      },
+      
+      // Stats de combate
+      stats: pokemonData.stats.map(stat => ({
+        name: stat.stat.name,
+        baseStat: stat.base_stat,
+        effort: stat.effort
+      })),
+      
+      // Evoluciones
+      evolutions: evolutions,
+      
+      // Stats calculados para fácil acceso
+      calculated: {
+        totalStats: pokemonData.stats.reduce((sum, stat) => sum + stat.base_stat, 0),
+        statsByName: pokemonData.stats.reduce((acc, stat) => {
+          acc[stat.stat.name] = stat.base_stat;
+          return acc;
+        }, {}),
+        hasEvolutions: evolutions.length > 0
+      }
+    };
+    
+    console.log(`[PokemonApi] Stats y evoluciones obtenidos para ${result.basic.name} (ID: ${result.basic.id})`);
+    
+    return result;
+    
+  } catch (error) {
+    console.error(`Error al obtener stats y evoluciones del Pokemon desde ${pokemonUrl}:`, error);
+    throw new Error(`No se pudieron obtener los stats del Pokemon: ${error.message}`);
+  }
+}
+
+/**
  * Obtiene Pokemon filtrados por tipo
  * @param {string} type - Tipo de Pokemon (fire, water, etc.)
  * @param {number} limit - Límite de resultados

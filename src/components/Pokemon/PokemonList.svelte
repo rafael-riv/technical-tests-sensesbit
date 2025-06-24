@@ -9,7 +9,6 @@
     pokemonList, 
     isLoading, 
     error, 
-    selectPokemon,
     toggleComparisonSelection,
     comparisonSelection,
     canCompare,
@@ -33,15 +32,18 @@
   let canCompareNow = $derived($canCompare);
 
   // Handlers
-  async function handlePokemonClick(pokemon) {
-    try {
-      await selectPokemon(pokemon);
-      if (onPokemonSelected) {
-        onPokemonSelected(pokemon);
-      }
-    } catch (err) {
-      console.error('Error al seleccionar Pokemon:', err);
+  function handlePokemonClick(pokemon) {
+    // Solo entrega la URL del Pokemon para búsqueda de stats
+    const pokemonUrl = pokemon.url || `https://pokeapi.co/api/v2/pokemon/${pokemon.id}`;
+    
+    if (onPokemonSelected) {
+      onPokemonSelected({
+        ...pokemon,
+        url: pokemonUrl
+      });
     }
+    
+    console.log('Pokemon URL para stats:', pokemonUrl);
   }
 
   function handleComparisonToggle(pokemon) {
