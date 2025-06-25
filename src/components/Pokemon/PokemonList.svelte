@@ -140,7 +140,7 @@
     </Card>
   {:else}
     <!-- Lista de Pokemon -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+    <div class="flex flex-wrap gap-4 mb-6 justify-between">
       {#each displayedPokemons as pokemon (pokemon.id)}
         <div class="relative">
           <PokemonCard 

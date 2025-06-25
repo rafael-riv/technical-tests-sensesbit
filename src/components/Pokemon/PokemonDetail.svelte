@@ -80,7 +80,7 @@
   }
 </script>
 
-<Card class="w-full max-w-md mx-auto shadow-xl border-2">
+<Card class="w-full flex shadow-xl border-2">
   <CardHeader class="text-center bg-gradient-to-r from-blue-50 to-purple-50">
     <div class="flex items-center justify-between mb-3">
       <Button 
@@ -213,6 +213,37 @@
               <div class="font-bold text-blue-600">
                 {Math.round(pokemonData.calculated.totalStats / pokemonData.stats.length)}
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Física -->
+      <div class="mb-6">
+        <h3 class="text-lg font-bold mb-4 flex items-center">
+          📏 Información Física
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="text-center p-4 bg-blue-50 rounded-lg">
+            <div class="text-2xl mb-2">📏</div>
+            <div class="font-semibold text-gray-600 text-sm">Altura</div>
+            <div class="text-xl font-bold text-blue-600">
+              {(pokemonData.basic.height / 10).toFixed(1)}m
+            </div>
+            <div class="text-xs text-gray-500">
+              {pokemonData.basic.height} decímetros
+            </div>
+          </div>
+          
+          <div class="text-center p-4 bg-green-50 rounded-lg">
+            <div class="text-2xl mb-2">⚖️</div>
+            <div class="font-semibold text-gray-600 text-sm">Peso</div>
+            <div class="text-xl font-bold text-green-600">
+              {(pokemonData.basic.weight / 10).toFixed(1)}kg
+            </div>
+            <div class="text-xs text-gray-500">
+              {pokemonData.basic.weight} hectogramos
             </div>
           </div>
         </div>

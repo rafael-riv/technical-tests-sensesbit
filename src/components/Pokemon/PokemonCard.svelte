@@ -45,7 +45,7 @@
 
 {#if !showDetail}
   <Card 
-    class="cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden {isSelectedForComparison ? 'ring-2 ring-blue-500' : ''}"
+    class="cursor-pointer w-40 hover:shadow-lg transition-all duration-200 overflow-hidden {isSelectedForComparison ? 'ring-2 ring-blue-500' : ''}"
     onclick={handleCardClick}
   >
     <!-- Imagen del Pokemon -->

@@ -226,7 +226,9 @@ export async function getPokemonStatsAndEvolutions(pokemonUrl) {
       // Información básica mínima
       basic: {
         id: pokemonData.id,
-        name: pokemonData.name
+        name: pokemonData.name,
+        height: pokemonData.height,
+        weight: pokemonData.weight
       },
       
       // Stats de combate
