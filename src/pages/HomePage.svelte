@@ -129,29 +129,29 @@
           <CardHeader class="">
             <CardTitle class="flex items-center gap-3">
               <span class="text-2xl">⚡</span>
-              <div>
-                <h2 class="text-2xl font-bold">
+              <div class="flex items-center gap-3">
+                <h2 class="text-2xl font-bold text-black">
                   {formatMoveName(moveDetails.name)}
                 </h2>
                 {#if moveDetails.type}
                   <Badge 
-                      href="#"
+                    href="#"
                     style="background-color: {getTypeColor(moveDetails.type)}; color: white;"
-                    class="mt-2"
+                    class=""
                   >
                     {moveDetails.type.toUpperCase()}
                   </Badge>
                 {/if}
               </div>
             </CardTitle>
-            <CardDescription class="text-lg">
+            <CardDescription class="text-lg text-black text-left">
               Información detallada del movimiento seleccionado
             </CardDescription>
           </CardHeader>
           
           <CardContent class="">
             <!-- Stats del movimiento -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-3 gap-6 mb-6">
               {#if moveDetails.power}
                 <div class="text-center p-4 bg-red-50 rounded-lg border border-red-200">
                   <div class="text-sm font-medium text-red-600 mb-1">Poder</div>
@@ -214,12 +214,12 @@
         <Card class="text-center py-12">
           <CardContent class="">
             <div class="text-6xl mb-4">🎯</div>
-            <h3 class="text-xl font-semibold mb-2">Selecciona un movimiento</h3>
+            <h3 class="text-xl font-semibold mb-2 text-teal-600">Selecciona un movimiento</h3>
             <p class="text-gray-600 mb-6">
               Usa el buscador de arriba para encontrar un movimiento Pokemon
             </p>
             <div class="max-w-md mx-auto text-left">
-              <h4 class="font-semibold mb-3">¿Cómo usar esta herramienta?</h4>
+              <h4 class="font-semibold mb-3 text-blue-500">¿Cómo usar esta herramienta?</h4>
               <ol class="list-decimal list-inside space-y-2 text-sm text-gray-600">
                 <li>Escribe el nombre de un movimiento en el buscador</li>
                 <li>Selecciona el movimiento de la lista</li>

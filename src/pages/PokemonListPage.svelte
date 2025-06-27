@@ -157,8 +157,8 @@
           <CardTitle class="flex items-center gap-3">
             <span class="text-2xl">⚡</span>
             <div>
-              <h3 class="text-xl font-bold">Información del Movimiento</h3>
-              <p class="text-sm text-gray-600 mt-1">
+              <h3 class="text-xl font-bold text-black">Información del Movimiento</h3>
+              <p class="text-sm text-gray-600 mt-1 text-start">
                 Detalles sobre {formatMoveName(currentMoveName)}
               </p>
             </div>
@@ -207,7 +207,7 @@
       <Card class="text-center py-12">
         <CardContent class="">
           <div class="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <h3 class="text-xl font-semibold mb-2">Cargando Pokemon...</h3>
+          <h3 class="text-xl font-semibold mb-2 text-black">Cargando Pokemon...</h3>
           <p class="text-gray-600">
             Obteniendo la lista de Pokemon que pueden aprender {currentMoveName ? formatMoveName(currentMoveName) : 'este movimiento'}
           </p>

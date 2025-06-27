@@ -64,7 +64,7 @@
 
     <CardContent class="p-4">
       <!-- Nombre -->
-      <h3 class="font-bold text-lg mb-2 capitalize">
+      <h3 class="font-bold text-lg mb-2 capitalize text-black">
         {formatName(pokemon.name)}
       </h3>
 
