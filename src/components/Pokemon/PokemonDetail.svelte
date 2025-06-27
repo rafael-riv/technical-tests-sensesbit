@@ -82,16 +82,8 @@
 
 <Card class="w-full flex shadow-xl border-2">
   <CardHeader class="text-center bg-gradient-to-r from-blue-50 to-purple-50">
-    <div class="flex items-center justify-between mb-3">
-      <Button 
-        variant="ghost" 
-        size="sm"
-        onclick={handleClose}
-        class="text-gray-500 hover:text-gray-700"
-      >
-        ← Volver
-      </Button>
-      <div class="text-right">
+    <div class="flex items-center justify-center mb-3">
+      <div class="text-center">
         <span class="text-sm text-gray-500">#{pokemon.id}</span>
       </div>
     </div>
@@ -110,7 +102,7 @@
       {/if}
     </div>
 
-    <CardTitle class="text-2xl font-bold capitalize mb-2">
+    <CardTitle class="text-2xl font-bold capitalize mb-2 text-black">
       {formatName(pokemon.name)}
     </CardTitle>
 
@@ -177,7 +169,7 @@
     {#if pokemonData && !isLoading && !error}
       <!-- Stats de Combate -->
       <div class="mb-6">
-        <h3 class="text-lg font-bold mb-4 flex items-center">
+        <h3 class="text-lg font-bold mb-4 flex items-center text-black">
           ⚔️ Stats de Combate
           <span class="text-sm text-gray-500 ml-2 font-normal">(Total: {pokemonData.calculated.totalStats})</span>
         </h3>
@@ -186,7 +178,7 @@
           {#each pokemonData.stats as stat}
             <div class="space-y-1">
               <div class="flex justify-between items-center">
-                <span class="font-medium text-sm">{formatStatName(stat.name)}</span>
+                <span class="font-medium text-sm" style="color: {getStatColor(stat.baseStat)}">{formatStatName(stat.name)}</span>
                 <span class="font-bold text-sm" style="color: {getStatColor(stat.baseStat)}">{stat.baseStat}</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3">
@@ -220,7 +212,7 @@
 
       <!-- Información Física -->
       <div class="mb-6">
-        <h3 class="text-lg font-bold mb-4 flex items-center">
+        <h3 class="text-lg font-bold mb-4 flex items-center text-black">
           📏 Información Física
         </h3>
         
@@ -251,7 +243,7 @@
 
       <!-- Evoluciones -->
       <div class="mb-4">
-        <h3 class="text-lg font-bold mb-4 flex items-center">
+        <h3 class="text-lg font-bold mb-4 flex items-center text-black">
           🔄 Cadena Evolutiva
         </h3>
         
@@ -269,7 +261,7 @@
                   <div class="text-xs text-gray-500">ID: #{evolution.id}</div>
                 </div>
                 {#if evolution.name === pokemon.name}
-                  <Badge href="#" class="bg-blue-500 text-white text-xs">
+                  <Badge  href="" class="bg-blue-600  text-xs">
                     ACTUAL
                   </Badge>
                 {/if}

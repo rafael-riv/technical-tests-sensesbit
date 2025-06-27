@@ -182,7 +182,7 @@
       <Button
         variant="ghost"
         size="sm"
-        class="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+        class="absolute right-2  top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
         onclick={clearSelection}
       >
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,11 +190,8 @@
         </svg>
       </Button>
     {/if}
-  </div>
-
-  <!-- Dropdown de resultados -->
-  {#if showDropdown}
-    <Card class="absolute z-50 w-full mt-1 max-h-80 overflow-y-auto border shadow-lg">
+    {#if showDropdown}
+    <Card class="absolute z-50 mt-1 w-full max-h-80 overflow-y-auto border shadow-lg bg-black">
       <CardContent class="p-0">
         {#if $isSearching}
           <!-- Estado de carga -->
@@ -214,7 +211,7 @@
           </div>
         {:else}
           <!-- Lista de movimientos -->
-          <div class="divide-y">
+          <div class="w-full">
             {#each $displayMoves.slice(0, 10) as move (move.id)}
               <button
                 class="w-full p-3 text-left hover:bg-gray-50 transition-colors focus:bg-gray-50 focus:outline-none"
@@ -223,7 +220,7 @@
                 <div class="flex items-center justify-between">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="font-medium text-gray-900">
+                      <span class="font-medium">
                         {formatMoveName(move.name)}
                       </span>
                       {#if move.type}
@@ -267,6 +264,10 @@
       </CardContent>
     </Card>
   {/if}
+  </div>
+
+  <!-- Dropdown de resultados -->
+
 
   <!-- Mensaje de error -->
   {#if $error || $searchError}

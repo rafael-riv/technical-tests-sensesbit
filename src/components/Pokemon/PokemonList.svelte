@@ -73,9 +73,9 @@
         <div class="flex items-center gap-3">
           <span class="text-2xl">🎯</span>
           <div>
-            <h2 class="text-xl font-bold">{title}</h2>
+            <h2 class="text-xl font-bold text-black">{title}</h2>
             {#if pokemons.length > 0}
-              <p class="text-sm text-gray-600 mt-1">
+              <p class="text-sm text-gray-600 mt-1 text-start">
                 {pokemons.length} Pokemon encontrados
               </p>
             {/if}
